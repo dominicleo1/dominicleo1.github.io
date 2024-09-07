@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="img-src 'self' data: file:;">
+    <title>NEW STAR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --category-width: 200px;
+            --category-height: 80px;
+            --category-font-size: 1.8em;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .content {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        h1 {
+            font-size: 8em;
+            margin-bottom: 30px;
+        }
+        h2 {
+            font-size: 5em;
+            margin-top: 30px;
+        }
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 36px;
+        }
+        .category {
+            font-size: var(--category-font-size);
+            width: var(--category-width);
+            height: var(--category-height);
+            line-height: var(--category-height);
+            background-color: rgba(164, 199, 251, 0.5);
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .category:hover {
+            background-color: rgba(0, 100, 255, 0.7);
+        }
+
+        .qr-code {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 100px;
+            height: 100px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .search-container {
+            position: fixed;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            width: 500px;
+            height: 40px;
+            background-color: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #searchInput {
+            flex-grow: 1;
+            height: 100%;
+            padding: 0 20px;
+            border: none;
+            font-size: 16px;
+            background: transparent;
+        }
+
+        #searchInput::placeholder {
+            color: #888;
+        }
+
+        .search-container button {
+            width: 80px;
+            height: 100%;
+            border: none;
+            background-color: #0078d4;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .search-text {
+            font-weight: bold;
+        }
+
+        .highlight {
+            background-color: yellow;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="近期热点" onkeypress="search(event)">
+        <button onclick="performSearch()">
+            <span class="search-text">搜索</span>
+        </button>
+    </div>
+    <div class="content">
+        <h1>NEW STAR</h1>
+        <h2>星  禾</h2>
+        <div class="categories">
+            <div class="category" onclick="window.location.href='music.html'">音乐</div>
+            <div class="category">影视</div>
+            <div class="category">商业演出</div>
+            <div class="category">科技生活</div>
+            <div class="category">宇宙科学</div>
+            <div class="category">游戏</div>
+            <div class="category">历史</div>
+            <div class="category">经典古文</div>
+            <div class="category">智能聊天</div>
+
+        </div>
+    </div>
+
+    <div class="qr-code">
+        <img src="E:\mywebsite\images/wx.jpg" alt="个人二维码">
+    </div>
+
+    <script>
+        // 添加这个函数来加载其他页面的内容
+        async function loadPageContent(url) {
+            const response = await fetch(url);
+            const text = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            return doc.body.innerText;
+        }
+
+        // 修改搜索函数
+        async function search(event) {
+            if (event && event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        async function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (!searchTerm) return;
+
+            let content = document.body.innerText;
+            content += await loadPageContent('music.html');
+
+            const regex = new RegExp(searchTerm, 'gi');
+            const matches = content.match(regex);
+
+            let resultHtml = '';
+            if (matches && matches.length > 0) {
+                resultHtml = `找到 ${matches.length} 个结果：<br>`;
+                matches.forEach((match, index) => {
+                    resultHtml += `${index + 1}. ${match}<br>`;
+                });
+            } else {
+                resultHtml = '你搜索的内容不存在';
+            }
+
+            const resultElement = document.createElement('div');
+            resultElement.innerHTML = resultHtml;
+            resultElement.style.position = 'fixed';
+            resultElement.style.top = '50%';
+            resultElement.style.left = '50%';
+            resultElement.style.transform = 'translate(-50%, -50%)';
+            resultElement.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            resultElement.style.color = 'white';
+            resultElement.style.padding = '20px';
+            resultElement.style.borderRadius = '10px';
+            resultElement.style.zIndex = '1000';
+
+            document.body.appendChild(resultElement);
+
+            setTimeout(() => {
+                document.body.removeChild(resultElement);
+            }, 5000);
+        }
+
+        // 创建Three.js场景、相机和渲染器
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 0.1, 2000);
+        const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('canvas')});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        let stars;
+
+        // 创建圆形星星
+        function createStars() {
+            const geometry = new THREE.BufferGeometry();
+            const vertices = [];
+            for (let i = 0; i < 10000; i++) {
+                vertices.push(
+                    Math.random() * 2000 - 1000,
+                    Math.random() * 2000 - 1000,
+                    Math.random() * 2000 - 1000
+                );
+            }
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+            // 创建圆形纹理
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 32, 32);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.PointsMaterial({
+                size: 3,
+                map: texture,
+                transparent: true,
+                blending: THREE.AdditiveBlending
+            });
+
+            stars = new THREE.Points(geometry, material);
+            scene.add(stars);
+        }
+
+        // 更新星星位置
+        function updateStars() {
+            const positions = stars.geometry.attributes.position.array;
+            for (let i = 0; i < positions.length; i += 3) {
+                positions[i + 2] += 0.5; // 降低星星移动速度
+                if (positions[i + 2] > 1000) {
+                    positions[i + 2] = -1000; // 当星星移出视野时，将其重置到远处
+                }
+            }
+            stars.geometry.attributes.position.needsUpdate = true;
+        }
+
+        // 创建行星
+        function createPlanet(radius, texture, orbitRadius, orbitSpeed, opacity = 1) {
+            const geometry = new THREE.SphereGeometry(radius, 32, 32);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x808080, // 默认灰色
+                shininess: 18, // 降低光泽度
+                bumpScale: 0.05,
+                transparent: true, // 启用透明
+                opacity: opacity  // 设置透明度
+            });
+            
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.crossOrigin = '';
+            
+            textureLoader.load(
+                texture, 
+                function(tex) {
+                    material.map = tex;
+                    material.needsUpdate = true;
+                    console.log('纹理加载成功:', texture);
+                },
+                function(xhr) {
+                    console.log((xhr.loaded / xhr.total * 100) + '% 加载中:', texture);
+                },
+                function(err) {
+                    console.error('纹理加载失败:', texture, err);
+                }
+            );
+
+            const planet = new THREE.Mesh(geometry, material);
+            
+            planet.userData.orbitRadius = orbitRadius;
+            planet.userData.orbitSpeed = orbitSpeed;
+            planet.userData.angle = Math.random() * Math.PI * 2;
+
+            scene.add(planet);
+            return planet;
+        }
+
+        // 创建月球函数
+        function createMoon(planetRadius, moonRadius, orbitRadius, orbitSpeed) {
+            const moonGeometry = new THREE.SphereGeometry(moonRadius, 32, 32);
+            const moonMaterial = new THREE.MeshLambertMaterial({
+                map: new THREE.TextureLoader().load('images/moon.jpg'),
+                bumpScale: 0.05,
+            });
+            const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+
+            // 创建一个空的3D对象作为月球的轨道中心
+            const moonOrbit = new THREE.Object3D();
+            moonOrbit.add(moon);
+
+            // 设置月球的位置
+            moon.position.set(orbitRadius, 0, 0);
+
+            // 将月球轨道数据保存在userData中
+            moonOrbit.userData = {
+                orbitSpeed: orbitSpeed,
+                orbitRadius: orbitRadius
+            };
+
+            return moonOrbit;
+        }
+
+        // 创建行星带
+        function createPlanetRing(innerRadius, outerRadius, color) {
+            const geometry = new THREE.RingGeometry(innerRadius, outerRadius, 64);
+            const material = new THREE.MeshBasicMaterial({
+                color: color,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.7
+            });
+            const ring = new THREE.Mesh(geometry, material);
+            ring.rotation.x = Math.PI / 2;
+            return ring;
+        }
+
+        // 创建木星行星带
+        function createJupiterRings(planetRadius) {
+            const ringsGroup = new THREE.Group();
+
+            // 定义多个环的参数
+            const ringsData = [
+                { innerRadius: 1.4, outerRadius: 1.42, color: 0x8B4513, opacity: 0.7 }, // 内环，棕色
+                { innerRadius: 1.42, outerRadius: 1.5, color: 0xD2691E, opacity: 0.6 }, // 中环，浅棕色
+                { innerRadius: 1.5, outerRadius: 1.55, color: 0xDEB887, opacity: 0.5 }, // 外环，更浅的棕色
+                { innerRadius: 1.55, outerRadius: 1.6, color: 0xF4A460, opacity: 0.4 }  // 最外环，沙棕色
+            ];
+
+            ringsData.forEach(ringData => {
+                const geometry = new THREE.RingGeometry(
+                    ringData.innerRadius * planetRadius, 
+                    ringData.outerRadius * planetRadius, 
+                    128
+                );
+                const material = new THREE.MeshBasicMaterial({
+                    color: ringData.color,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: ringData.opacity
+                });
+                const ring = new THREE.Mesh(geometry, material);
+                ring.rotation.x = Math.PI / 2;
+                ringsGroup.add(ring);
+            });
+
+            return ringsGroup;
+        }
+
+        // 创建太阳系
+        function createSolarSystem() {
+            const sun = createPlanet(0, 'images/sun.jpg', 0, 0, 1);  // 太阳：完全不透明
+            const mercury = createPlanet(0.8, 'images/mercury.jpg', 10, 0.002, 0.8);  // 水星：稍微透明
+            const venus = createPlanet(1.2, 'images/venus.jpg', 15, 0.001, 0.9);  // 金星：略微透明
+            const earth = createPlanet(2.5, 'images/earth.jpg', 80, 0.00021, 1);  // 地球：完全不透明
+            const mars = createPlanet(1, 'images/mars.jpg', 25, 0.004, 0.25);  // 火星：稍微透明
+            const jupiter = createPlanet(3, 'images/jupiter.jpg', 35, 0.0005, 0.95);  // 木星：几乎不透明
+            const saturn = createPlanet(2.5, 'images/saturn.jpg', 45, 0.00051, 0.9);  // 土星：略微透明
+
+            // 创建木星的行星带
+            const jupiterRings = createJupiterRings(3); // 3是木星的半径
+            jupiter.add(jupiterRings);
+
+            // 创建月球并添加到地球
+            const moon = createMoon(2.5, 0.5, 5, 0.01);
+            earth.add(moon);
+
+            return [sun, mercury, venus, earth, mars, jupiter, saturn];
+        }
+
+
+        // 创建银河系
+        function createGalaxy() {
+            const particles = 100000;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particles * 3);
+            const colors = new Float32Array(particles * 3);
+
+            const colorPalette = [new THREE.Color(0x4a668f), new THREE.Color(0x9a8fb8), new THREE.Color(0xe6b89c)];
+
+            for (let i = 0; i < particles; i++) {
+                const distance = Math.random() * 300 + 50;
+                const theta = THREE.MathUtils.randFloatSpread(360);
+                const phi = THREE.MathUtils.randFloatSpread(360);
+
+                positions[i * 3] = distance * Math.sin(theta) * Math.cos(phi);
+                positions[i * 3 + 1] = distance * Math.sin(theta) * Math.sin(phi);
+                positions[i * 3 + 2] = distance * Math.cos(theta);
+
+                const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.5,
+                vertexColors: true,
+                depthTest: false,
+                sizeAttenuation: false
+            });
+
+            const galaxy = new THREE.Points(geometry, material);
+            scene.add(galaxy);
+            return galaxy;
+        }
+
+        // 添加光源
+        const ambientLight = new THREE.AmbientLight(0x404040); // 柔和的环境光
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1, 1000); // 明亮的点光源
+        pointLight.position.set(0, 0, 0); // 将点光源放在太阳的位置
+        scene.add(pointLight);
+
+        // 创建场景元素
+        createStars();
+        const planets = createSolarSystem();
+        const galaxy = createGalaxy();
+
+        camera.position.x = 5;
+        camera.position.y = 15;
+        camera.position.z = 100; // 设置相机位置
+
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            updateStars();
+            
+            // 更新行星位置
+            planets.forEach((planet, index) => {
+                if (index === 0) return; // 跳过太阳
+                planet.userData.angle += planet.userData.orbitSpeed;
+                planet.position.x = Math.cos(planet.userData.angle) * planet.userData.orbitRadius;
+                planet.position.z = Math.sin(planet.userData.angle) * planet.userData.orbitRadius;
+                planet.rotation.y += 0.001 * (index + 1); // 行星自转
+
+                // 更新月球位置（如果存在）
+                if (planet.children.length > 0) {
+                    planet.children.forEach(child => {
+                        if (child instanceof THREE.Object3D && child.userData.orbitSpeed) {
+                            // 这是月球
+                            child.rotation.y += child.userData.orbitSpeed;
+                            child.children[0].position.x = Math.cos(child.rotation.y) * child.userData.orbitRadius;
+                            child.children[0].position.z = Math.sin(child.rotation.y) * child.userData.orbitRadius;
+                        } else if (child instanceof THREE.Group) {
+                            // 这是木星的环系
+                            child.rotation.z += 0; // 缓慢旋转环系
+                        }
+                    });
+                }
+            });
+
+            galaxy.rotation.y += 0.0001; // 银河系旋转
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // 调整窗口大小时重新设置渲染器和相机
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
