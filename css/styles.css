@@ -1,0 +1,198 @@
+/* 全局变量定义 */
+:root {
+    --category-width: 200px;
+    --category-height: 80px;
+    --category-font-size: 1.8em;
+    /* 主标题 */
+    --main-title-size: 10em;
+    --main-title-margin-bottom: 30px;
+    --main-title-color: white;
+
+    /* 副标题 */
+    --sub-title-size: 5.6em;
+    --sub-title-margin-top: 0;
+    --sub-title-margin-bottom: 30px;
+    --sub-title-color: white;
+
+    /* 子标题 */
+    --category-gap: 20px;
+    --categories-width: 500%;
+    --categories-max-width: 600px;
+    --category-padding: 20px;
+    --category-bg-color: rgba(197, 179, 246, 0.3);
+    --category-border-radius: 20px;
+    --category-font-size: 1.5em;
+    --category-color: white;
+    --category-hover-bg-color: rgba(147, 55, 183, 0.7);
+    --font-size-multiplier: 1;
+}
+
+/* 全局body样式 */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    color: white;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #000;
+    font-size: calc(16px * var(--font-size-multiplier));
+}
+
+/* Three.js画布样式 */
+#canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+}
+
+/* 主标题样式 */
+.main-title {
+    font-size: calc(10em / var(--font-size-multiplier));
+    margin-bottom: var(--main-title-margin-bottom, 30px);
+    text-align: center;
+    color: var(--main-title-color, white);
+}
+
+/* 副标题样式 */
+.sub-title {
+    font-size: calc(5.6em / var(--font-size-multiplier));
+    margin-top: var(--sub-title-margin-top, 0);
+    margin-bottom: var(--sub-title-margin-bottom, 30px);
+    text-align: center;
+    color: var(--sub-title-color, white);
+}
+
+/* 子标题样式 */
+.categories {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--category-gap, 20px);
+    width: var(--categories-width, 100%);
+    max-width: var(--categories-max-width, 100px);
+    margin: 0 auto;
+}
+
+/* 主页子标题背景样式 */
+.category {
+    padding: var(--category-padding, 20px);
+    background-color: var(--category-bg-color, rgba(197, 179, 246, 0.3));
+    border-radius: var(--category-border-radius, 20px);
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    font-size: calc(1.5em / var(--font-size-multiplier));
+    color: var(--category-color, white);
+    text-align: center;
+}
+
+/* 子标题悬停效果 */
+.category:hover {
+    background-color: var(--category-hover-bg-color, rgba(147, 55, 183, 0.7));
+}
+
+ 
+
+/* 主容器样式 */
+.main-container {
+    position: absolute;
+    top: 5vh; /* 将内容移到页面上方 1/5 处 */
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 100%;
+}
+
+/* 内容容器样式 */
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* 改为从顶部开始排列 */
+    min-height: 80vh; /* 确保内容至少占据剩余的 4/5 视口高度 */
+}
+ 
+ 
+/* 内容区域样式 */
+#content {
+    font-size: 1.3em; /* 增加内容区域文字大小，原来是 1.1em */
+    margin-top: 20px;
+}
+
+/* 在文件末尾添加以下样式 */
+.main-container .qr-code {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 50px !important;
+    z-index: 1000; /* 确保二维码在其他元素之上 */
+}
+
+.main-container .qr-code #qrCode {
+    width: 100px !important;
+    height: 100px !important;
+    transition: width 0.3s, height 0.3s;
+}
+#missile {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 100px;
+    transition: transform 0.1s ease-out;
+    z-index: 1000;
+    transform-origin: center 75%;
+}
+
+.missile-shot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: yellow;
+    border-radius: 50%;
+    z-index: 1001;
+}
+
+.collision-effect {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(circle, yellow, orange, red);
+    border-radius: 50%;
+    opacity: 1;
+    animation: fade-out 0.3s forwards;
+    z-index: 1002;
+}
+
+@keyframes fade-out {
+    to {
+        opacity: 0;
+        transform: scale(2);
+    }
+}
+
+/* 添加爆炸效果的样式 */
+.explosion {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: radial-gradient(circle, yellow, orange, red);
+    border-radius: 50%;
+    opacity: 1;
+    animation: explode 1s forwards;
+}
+
+@keyframes explode {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
